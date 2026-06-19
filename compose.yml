@@ -1,0 +1,40 @@
+services:
+  floci:
+    image: floci/floci:1.5.25-compat
+    env_file:
+      - ./config/aws.env
+      - ./config/floci.env
+    volumes:
+      - ./scripts/floci/ready.d:/etc/floci/init/ready.d:ro
+    ports:
+      - "4566:4566"
+
+  mongodb:
+    image: mongo:6.0.28
+    volumes:
+      - ./scripts/mongodb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.hello().ok"]
+      interval: 5s
+      start_period: 5s
+      retries: 3
+    ports:
+      - "27017:27017"
+
+  trade-gateway:
+    image: defradigital/trade-gateway:${TRADE_GATEWAY:-latest}
+    env_file:
+      - ./config/aws.env
+      - ./config/trade-gateway.env
+    depends_on:
+      floci:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8080/health"]
+      interval: 3s
+      start_period: 2s
+      retries: 3
+    ports:
+      - "3000:8080"
