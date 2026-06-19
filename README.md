@@ -1,4 +1,4 @@
-# trade-gateway-local-env
+# trade-gateway-local-environment
 
 Docker Compose for running Trade Gateway services locally.
 
