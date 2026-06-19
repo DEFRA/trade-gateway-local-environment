@@ -3,6 +3,7 @@
 Docker Compose for running Trade Gateway services locally.
 
 - [trade-gateway](https://github.com/DEFRA/trade-gateway)
+- [trade-gateway-publisher](https://github.com/DEFRA/trade-gateway-publisher) 
 
 ## Prerequisites
 
