@@ -22,7 +22,7 @@ services:
       - "27017:27017"
 
   trade-tracesnt-stub:
-    image: defradigital/trade-tracesnt-stub:${TRADE_TRACES_NT_STUB:-latest}
+    image: defradigital/trade-tracesnt-stub:${TRADE_TRACESNT_STUB:-latest}
     env_file:
       - ./config/trade-tracesnt-stub.env
     depends_on:
