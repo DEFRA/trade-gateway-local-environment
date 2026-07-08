@@ -1,1 +1,5 @@
 .env
+.DS_Store
+bruno/.DS_Store
+bruno/collections/.DS_Store
+docker-compose.override.yml
