@@ -1,14 +1,16 @@
 info:
   name: intras
   type: folder
-  seq: 2
+  seq: 3
 
 request:
-  auth: inherit
+  auth:
+    type: bearer
+    token: "{{test_intra_reader_access_token}}"
   scripts:
     - type: after-response
       code: |-
         if (res.getStatus() === 401) {
           bru.runRequest("auth/test-intra-reader");
-          console.log("401 unauthorized returned, new access_token for test-intra-reader requested.");
+          console.log("401 unauthorized returned, new access token for test-intra-reader requested.");
         }

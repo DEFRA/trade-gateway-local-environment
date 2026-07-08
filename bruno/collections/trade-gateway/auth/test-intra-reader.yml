@@ -1,7 +1,7 @@
 info:
-  name: test-ched-reader
+  name: test-intra-reader
   type: http
-  seq: 2
+  seq: 1
 
 http:
   method: POST
@@ -12,13 +12,13 @@ http:
       - name: scope
         value: "{{access_token_scope}}"
       - name: sub
-        value: test-ched-reader
+        value: test-intra-reader
   auth: inherit
 
 runtime:
   scripts:
     - type: after-response
-      code: bru.setVar("access_token", res.body.access_token);
+      code: bru.setVar("test_intra_reader_access_token", res.body.access_token);
 
 settings:
   encodeUrl: true
