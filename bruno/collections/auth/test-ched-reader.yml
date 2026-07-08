@@ -1,0 +1,27 @@
+info:
+  name: test-ched-reader
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{service_url}}/local/cognito/token"
+  body:
+    type: form-urlencoded
+    data:
+      - name: scope
+        value: "{{access_token_scope}}"
+      - name: sub
+        value: test-ched-reader
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.setVar("access_token", res.body.access_token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
