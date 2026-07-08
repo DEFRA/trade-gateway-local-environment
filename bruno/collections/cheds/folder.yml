@@ -1,0 +1,14 @@
+info:
+  name: cheds
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.getStatus() === 401) {
+          bru.runRequest("auth/test-ched-reader");
+          console.log("401 unauthorized returned, new access_token for test-ched-reader requested.");
+        }

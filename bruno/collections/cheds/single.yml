@@ -1,0 +1,15 @@
+info:
+  name: single
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{service_url}}/certificates/cheds/CHEDP.XI.2026.0000001"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
