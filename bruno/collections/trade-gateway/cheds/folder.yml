@@ -1,14 +1,16 @@
 info:
   name: cheds
   type: folder
-  seq: 3
+  seq: 2
 
 request:
-  auth: inherit
+  auth:
+    type: bearer
+    token: "{{test_ched_reader_access_token}}"
   scripts:
     - type: after-response
       code: |-
         if (res.getStatus() === 401) {
           bru.runRequest("auth/test-ched-reader");
-          console.log("401 unauthorized returned, new access_token for test-ched-reader requested.");
+          console.log("401 unauthorized returned, new access token for test-ched-reader requested.");
         }

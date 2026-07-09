@@ -27,7 +27,7 @@ docker compose up -d --build
 Get a bearer token as follows:
 
 ```bash
-curl -i -X POST http://localhost:3000/local/cognito/token \
+curl -i -X POST http://localhost:3001/local/cognito/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   --data-urlencode "scope=trade-gateway-resource-srv/access" \
   --data-urlencode "sub=<example-sub>"
