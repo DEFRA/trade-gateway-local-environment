@@ -1,4 +1,0 @@
-services:
-
-  trade-tracesnt-stub:
-    image: trade-tracesnt-stub-localstack-trade-tracesnt-stub:latest
