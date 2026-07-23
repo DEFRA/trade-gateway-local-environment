@@ -1,23 +1,63 @@
 services:
+
   floci:
-    image: floci/floci:1.5.25-compat
+    image: floci/floci:latest-aws
     env_file:
       - ./config/aws.env
       - ./config/floci.env
+    environment:
+      FLOCI_DEFAULT_REGION: eu-west-2
+      FLOCI_HOSTNAME: floci
+      FLOCI_STORAGE_MODE: hybrid
     volumes:
       - ./scripts/floci/ready.d:/etc/floci/init/ready.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:4566/_localstack/health >/dev/null || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
     ports:
       - "4566:4566"
+
+  trade-gateway-publisher-aws-init:
+    image: amazon/aws-cli:latest
+    depends_on:
+      floci:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: eu-west-2
+      AWS_REGION: eu-west-2
+    volumes:
+      - ./scripts/trade-gateway-publisher/init-aws.sh:/init-aws.sh:ro
+    entrypoint:
+      - /bin/sh
+      - /init-aws.sh
+    restart: "no"
 
   mongodb:
     image: mongo:6.0.28
     volumes:
       - ./scripts/mongodb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.hello().ok"]
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "quit(db.hello().ok ? 0 : 1)"
+        ]
       interval: 5s
+      timeout: 5s
       start_period: 5s
-      retries: 3
+      retries: 10
     ports:
       - "27017:27017"
 
@@ -29,10 +69,18 @@ services:
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:8080/health"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "--fail",
+          "--silent",
+          "http://localhost:8080/health"
+        ]
       interval: 3s
-      start_period: 2s
-      retries: 3
+      timeout: 5s
+      start_period: 5s
+      retries: 10
     ports:
       - "3000:8080"
 
@@ -41,17 +89,71 @@ services:
     env_file:
       - ./config/aws.env
       - ./config/trade-gateway.env
+    environment:
+      AWS_ENDPOINT_URL: http://floci:4566
     depends_on:
       floci:
         condition: service_healthy
+      trade-gateway-publisher-aws-init:
+        condition: service_completed_successfully
       mongodb:
         condition: service_healthy
       trade-tracesnt-stub:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:8080/health"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "--fail",
+          "--silent",
+          "http://localhost:8080/health"
+        ]
       interval: 3s
-      start_period: 2s
-      retries: 3
+      timeout: 5s
+      start_period: 5s
+      retries: 10
     ports:
       - "3001:8080"
+
+  trade-gateway-publisher:
+    image: defradigital/trade-gateway-publisher:${TRADE_GATEWAY_PUBLISHER:-latest}
+    env_file:
+      - ./config/aws.env
+    environment:
+      ASPNETCORE_URLS: http://+:8085
+
+      Mongo__DatabaseUri: mongodb://mongodb:27017/
+
+      TracesGateway__BaseUrl: http://trade-gateway:8080
+
+      TracesUpdateConsumer__IntraQueueUrl: http://floci:4566/000000000000/trade_gateway_publisher_intra_stream_internal_publisher.fifo
+      TracesUpdateConsumer__ChedQueueUrl: http://floci:4566/000000000000/trade_gateway_publisher_ched_stream_internal_publisher.fifo
+
+      TracesUpdatePublisher__IntraInternalTopicArn: arn:aws:sns:eu-west-2:000000000000:trade_gateway_publisher_intra_stream_internal.fifo
+      TracesUpdatePublisher__IntraTopicArn: arn:aws:sns:eu-west-2:000000000000:trade_gateway_publisher_intra_updates.fifo
+
+      TracesUpdatePublisher__ChedInternalTopicArn: arn:aws:sns:eu-west-2:000000000000:trade_gateway_publisher_ched_stream_internal.fifo
+      TracesUpdatePublisher__ChedTopicArn: arn:aws:sns:eu-west-2:000000000000:trade_gateway_publisher_ched_updates.fifo
+
+      AWS_ENDPOINT_URL: http://floci:4566
+      AWS_EMF_ENVIRONMENT: Local
+      AWS_REGION: eu-west-2
+      AWS_DEFAULT_REGION: eu-west-2
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+
+      USE_FLOCI: "true"
+
+    depends_on:
+      floci:
+        condition: service_healthy
+      trade-gateway-publisher-aws-init:
+        condition: service_completed_successfully
+      mongodb:
+        condition: service_healthy
+      trade-gateway:
+        condition: service_healthy
+
+    ports:
+      - "8085:8085"
