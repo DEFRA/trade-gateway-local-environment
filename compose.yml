@@ -120,6 +120,7 @@ services:
     image: defradigital/trade-gateway-publisher:${TRADE_GATEWAY_PUBLISHER:-latest}
     env_file:
       - ./config/aws.env
+      - ./config/trade-gateway-publisher.env
     environment:
       ASPNETCORE_URLS: http://+:8085
 
@@ -137,6 +138,7 @@ services:
       TracesUpdatePublisher__ChedTopicArn: arn:aws:sns:eu-west-2:000000000000:trade_gateway_publisher_ched_updates.fifo
 
       AWS_ENDPOINT_URL: http://floci:4566
+      AWS_ENDPOINT_URL_STS: http://trade-gateway:8080/local/sts
       AWS_EMF_ENVIRONMENT: Local
       AWS_REGION: eu-west-2
       AWS_DEFAULT_REGION: eu-west-2
