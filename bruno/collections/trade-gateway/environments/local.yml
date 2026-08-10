@@ -1,6 +1,6 @@
 name: local
 variables:
   - name: service_url
-    value: http://localhost:3001
+    value: http://localhost:8080
   - name: access_token_scope
     value: trade-gateway-resource-srv/access
