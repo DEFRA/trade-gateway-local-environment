@@ -1,0 +1,20 @@
+{
+  "UserConfig": {
+    "Namespaces": [
+      {
+        "Name": "sbemulatorns",
+        "Queues": [
+          {
+            "Name": "trade-gateway-publisher-ched-updates"
+          },
+          {
+            "Name": "trade-gateway-publisher-intra-updates"
+          }
+        ]
+      }
+    ],
+    "Logging": {
+      "Type": "Console"
+    }
+  }
+}
