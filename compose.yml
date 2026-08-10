@@ -28,6 +28,43 @@ services:
     ports:
       - "27017:27017"
 
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    env_file:
+      - ./config/mssql.env
+    healthcheck:
+      test: timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/1433'
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  servicebus-emulator:
+    image: servicebus-emulator-with-curl:latest
+    build:
+      dockerfile_inline: |
+        FROM mcr.microsoft.com/dotnet/aspnet:8.0.3-cbl-mariner2.0-amd64 AS base
+        FROM mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+        COPY --from=base /usr/bin/curl /usr/bin/curl
+        COPY --from=base /usr/lib /usr/lib
+        COPY --from=base /bin/sh /bin/sh
+    env_file:
+      - ./config/servicebus-emulator.env
+    volumes:
+      - ./config/servicebus-emulator.json:/ServiceBus_Emulator/ConfigFiles/Config.json
+    depends_on:
+      mssql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:5300/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    ports:
+      - "5672:5672"
+      - "5300:5300"
+
   trade-tracesnt-stub:
     image: defradigital/trade-tracesnt-stub:${TRADE_TRACESNT_STUB:-latest}
     env_file:
@@ -74,6 +111,8 @@ services:
       floci:
         condition: service_healthy
       mongodb:
+        condition: service_healthy
+      servicebus-emulator:
         condition: service_healthy
       trade-gateway:
         condition: service_healthy
