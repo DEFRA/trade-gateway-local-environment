@@ -10,6 +10,7 @@ Docker Compose for running Trade Gateway services locally.
 ### Dependencies
 
 Install the following:
+
 - [Docker](https://docs.docker.com/engine/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
@@ -28,7 +29,7 @@ docker compose up -d --build
 Get a bearer token as follows:
 
 ```bash
-curl -i -X POST http://localhost:3001/local/cognito/token \
+curl -i -X POST http://localhost:8080/local/cognito/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   --data-urlencode "scope=trade-gateway-resource-srv/access" \
   --data-urlencode "sub=<example-sub>"
