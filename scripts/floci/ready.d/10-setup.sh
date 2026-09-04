@@ -1,12 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # test-reports
 awslocal s3 mb s3://reports
-
-# trade-gateway
-awslocal sns create-topic --name trade_gateway_ched_updates
-awslocal sns create-topic --name trade_gateway_docom_updates
-awslocal sns create-topic --name trade_gateway_intra_updates
 
 # trade-gateway-publisher
 awslocal sns create-topic --name trade_gateway_publisher_ched_stream_internal.fifo --attributes '{"FifoTopic":"true","ContentBasedDeduplication":"true"}'
