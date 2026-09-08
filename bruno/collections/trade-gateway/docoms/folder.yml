@@ -1,0 +1,16 @@
+info:
+  name: docoms
+  type: folder
+  seq: 3
+
+request:
+  auth:
+    type: bearer
+    token: "{{test_docom_reader_access_token}}"
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.getStatus() === 401) {
+          bru.runRequest("auth/test-docom-reader");
+          console.log("401 unauthorized returned, new access token for test-docom-reader requested.");
+        }
