@@ -1,6 +1,6 @@
 services:
   floci:
-    image: floci/floci:2.0.1-compat
+    image: floci/floci:2.1.0-compat
     env_file:
       - ./config/aws.env
       - ./config/floci.env
@@ -27,7 +27,7 @@ services:
       - "27017:27017"
 
   mssql:
-    image: mcr.microsoft.com/azure-sql-edge:latest
+    image: mcr.microsoft.com/azure-sql-edge:2.0.0
     env_file:
       - ./config/mssql.env
     healthcheck:
@@ -38,7 +38,7 @@ services:
       start_period: 5s
 
   servicebus-emulator:
-    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1
     env_file:
       - ./config/servicebus-emulator.env
     volumes:
