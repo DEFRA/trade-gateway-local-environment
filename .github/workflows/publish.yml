@@ -1,5 +1,3 @@
-# https://github.com/DEFRA/cdp-build-action/blob/main/.github/workflows/release-please.yml
-
 name: Publish
 
 on:
@@ -9,14 +7,22 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  release:
+  build:
+    if: github.run_number != 1
+    name: Bump version and publish tag
     runs-on: ubuntu-latest
 
     steps:
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
-        id: release
+      - name: Check out current repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          release-type: simple
+          fetch-depth: "0"
+
+      - name: Bump version and publish tag
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8 # v1.75.0
+        env:
+          DEFAULT_BUMP: minor
+          INITIAL_VERSION: 0.0.0
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
