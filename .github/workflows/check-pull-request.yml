@@ -1,0 +1,42 @@
+name: Check pull request
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+  pull-requests: write
+
+jobs:
+  pr-validator:
+    name: Run pull request checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Start trade-gateway-local-environment
+        run: docker compose up --wait --wait-timeout 300 --quiet-pull
+
+      - name: Capture Docker Compose logs
+        if: always()
+        run: docker compose logs > logs.txt
+
+      - name: Upload Docker Compose logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docker-compose-logs
+          path: logs.txt
