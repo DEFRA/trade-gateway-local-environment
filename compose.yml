@@ -66,6 +66,25 @@ services:
     ports:
       - "3000:8080"
 
+  trade-traces-poc:
+    image: defradigital/trade-traces-poc:${TRADE_TRACES_POC:-latest}
+    env_file:
+      - ./config/aws.env
+      - ./config/trade-traces-poc.env
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      trade-tracesnt-stub:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    ports:
+      - "8090:8080"
+
   trade-gateway:
     image: defradigital/trade-gateway:${TRADE_GATEWAY:-latest}
     env_file:
