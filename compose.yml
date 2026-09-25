@@ -28,6 +28,8 @@ services:
 
   mssql:
     image: mcr.microsoft.com/azure-sql-edge:2.0.0
+    # 2.0.0 ships amd64 only, so Apple Silicon runs it under emulation.
+    platform: linux/amd64
     env_file:
       - ./config/mssql.env
     healthcheck:
