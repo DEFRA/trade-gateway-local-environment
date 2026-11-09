@@ -6,6 +6,7 @@ Docker Compose for running Trade Gateway services locally.
 - [trade-gateway-publisher](https://github.com/DEFRA/trade-gateway-publisher)
 - [trade-traces-poc](https://github.com/DEFRA/trade-traces-poc)
 - [trade-tracesnt-stub](https://github.com/DEFRA/trade-tracesnt-stub)
+- [cdp-uploader](https://github.com/DEFRA/cdp-uploader), with redis
 
 ## Prerequisites
 
@@ -62,6 +63,17 @@ URLs go to **EU acceptance**:
 
 Seed the simulator through its control API on <http://localhost:3000/control>; see the
 [trade-tracesnt-stub README](https://github.com/DEFRA/trade-tracesnt-stub).
+
+## CHED attachments
+
+`GET /certificates/cheds/{id}/attachments/{attachmentId}` on `trade-gateway` is asynchronous. The
+first request returns `202`; repeat it until the file comes back with `200`. Behind it, the request
+goes over an SNS/SQS FIFO queue, the file is fetched from TRACES, and `cdp-uploader` scans it and
+moves it to the `trade-gateway-documents` bucket in floci.
+
+The scan is mocked, and a file whose name contains `virus` is rejected. Only PDFs are supported.
+
+<http://localhost:8080/health/all> reports whether the topic, queue and bucket are reachable.
 
 ## Service API documentation
 
