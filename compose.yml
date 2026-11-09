@@ -11,7 +11,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-      start_period: 20s
+      # Long enough for every awslocal command in scripts/floci/ready.d on a slow CI runner. It costs
+      # nothing when floci is quicker: the first passing check ends the start period.
+      start_period: 120s
     ports:
       - "4566:4566"
 
