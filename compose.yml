@@ -11,7 +11,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-      start_period: 20s
+      # Long enough for every awslocal command in scripts/floci/ready.d on a slow CI runner. It costs
+      # nothing when floci is quicker: the first passing check ends the start period.
+      start_period: 120s
     ports:
       - "4566:4566"
 
@@ -51,6 +53,38 @@ services:
     ports:
       - "5672:5672"
       - "5300:5300"
+
+  # Session store for cdp-uploader.
+  redis:
+    image: redis:7.2.3-alpine3.18
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+
+  # Malware scans CHED attachments before they reach the trade-gateway-documents bucket. The scan is
+  # mocked locally: a file whose name contains "virus" is rejected.
+  cdp-uploader:
+    image: defradigital/cdp-uploader:${CDP_UPLOADER:-latest}
+    env_file:
+      - ./config/aws.env
+      - ./config/cdp-uploader.env
+    depends_on:
+      floci:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:7337/health"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    ports:
+      - "7337:7337"
 
   trade-tracesnt-stub:
     image: defradigital/trade-tracesnt-stub:${TRADE_TRACESNT_STUB:-latest}
@@ -96,6 +130,8 @@ services:
       floci:
         condition: service_healthy
       mongodb:
+        condition: service_healthy
+      cdp-uploader:
         condition: service_healthy
       trade-tracesnt-stub:
         condition: service_healthy
